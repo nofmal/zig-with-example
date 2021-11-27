@@ -1,0 +1,323 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><title>JSON - Zig w/ Example</title><link rel=stylesheet href=../a.min.css><link rel=icon href=../favicon.ico sizes=any><link rel=icon href=../icon.svg type=image/svg+xml><link rel=apple-touch-icon href=../apple-touch-icon.png><link rel=manifest href=../a.min.webmanifest><meta name=author content="Bagus Bimasakti"><meta name=description content="asdf"><meta name=generator content="Hugo 0.89.4"><meta name=referrer content="no-referrer"><meta name=theme-color content="#212121"><meta property="og:title" content="JSON - Zig w/ Example"><meta property="og:url" content="https://zigwithexample.org/json/"><meta property="og:image" content="https://zigwithexample.org/opengraph.png"><meta property="og:image:type" content="image/png"><meta property="og:image:width" content="1024"><meta property="og:image:height" content="1024"><meta property="og:type" content="article"><meta name=twitter:card content="summary"><meta name=twitter:title content="JSON - Zig w/ Example"><meta name=twitter:description content="asdf"><meta name=twitter:image content="https://zigwithexample.org/opengraph.png"></head><body><header><h1><a href=../>Zig w/ Example</a>
+- JSON</h1></header><main><article><h2 id=encode-json><a href=#encode-json>Encode into JSON</a></h2><p>Also known as <em>JSON marshalling</em>.</p><p>In this example, we will encode a struct into a JSON string and save it
+into a file named <span class=monospace>data.json</span>.</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>Data</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>name</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>is_alive</span><span class=o>:</span><span class=w> </span><span class=kt>bool</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>age</span><span class=o>:</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>address</span><span class=o>:</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=n>street_address</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>city</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>state</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>postal_code</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>},</span><span class=w>
+</span><span class=w>    </span><span class=n>children_age</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=n>i8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>spouse</span><span class=o>:</span><span class=w> </span><span class=o>?</span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Encode a struct into a JSON string&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>foo</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>Data</span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>name</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;John Smith&#34;</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>is_alive</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>age</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=mi>45</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>address</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>.{</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>street_address</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;21 2nd Street&#34;</span><span class=p>,</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>city</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;New York&#34;</span><span class=p>,</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>state</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;NY&#34;</span><span class=p>,</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>postal_code</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;10021-3100&#34;</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=p>},</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>children_age</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=o>&amp;</span><span class=p>.{</span><span class=w> </span><span class=mi>12</span><span class=p>,</span><span class=w> </span><span class=mi>8</span><span class=p>,</span><span class=w> </span><span class=mi>21</span><span class=w> </span><span class=p>},</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>spouse</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>null</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>var</span><span class=w> </span><span class=n>file</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>fs</span><span class=p>.</span><span class=n>cwd</span><span class=p>().</span><span class=n>createFile</span><span class=p>(</span><span class=s>&#34;data.json&#34;</span><span class=p>,</span><span class=w> </span><span class=p>.{});</span><span class=w>
+</span><span class=w>    </span><span class=k>defer</span><span class=w> </span><span class=n>file</span><span class=p>.</span><span class=n>close</span><span class=p>();</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>options</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>StringifyOptions</span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>whitespace</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>.{</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>indent_level</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=mi>0</span><span class=p>,</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>indent</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>.{</span><span class=w> </span><span class=p>.</span><span class=n>Space</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=mi>4</span><span class=w> </span><span class=p>},</span><span class=w>
+</span><span class=w>            </span><span class=p>.</span><span class=n>separator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=p>},</span><span class=w>
+</span><span class=w>    </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>stringify</span><span class=p>(</span><span class=n>foo</span><span class=p>,</span><span class=w> </span><span class=n>options</span><span class=p>,</span><span class=w> </span><span class=n>file</span><span class=p>.</span><span class=n>writer</span><span class=p>());</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=n>_</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>try</span><span class=w> </span><span class=n>file</span><span class=p>.</span><span class=n>write</span><span class=p>(</span><span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ cat data.json
+{
+    "name": "John Smith",
+    "is_alive": true,
+    "age": 45,
+    "address": {
+        "street_address": "21 2nd Street",
+        "city": "New York",
+        "state": "NY",
+        "postal_code": "10021-3100"
+    },
+    "children_age": [
+        12,
+        8,
+        21
+    ],
+    "spouse": null
+}
+
+$ <span class=blink>█</span></pre></div><h2 id=decode-json><a href=#decode-json>Decode from JSON</a></h2><p>Also known as <em>JSON unmarshalling</em>.</p><p>Suppose we know about the structure of the JSON data, and that our struct
+is guaranteed to be able to handle all of the parsed data.</p><p>To unmarshal, we use <code>std.json.parse()</code>.</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>Data</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>name</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>is_alive</span><span class=o>:</span><span class=w> </span><span class=kt>bool</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>age</span><span class=o>:</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>address</span><span class=o>:</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=n>street_address</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>city</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>state</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>postal_code</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>},</span><span class=w>
+</span><span class=w>    </span><span class=n>children_age</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=n>i8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>spouse</span><span class=o>:</span><span class=w> </span><span class=o>?</span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Decode into a struct from a JSON string&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>options</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>ParseOptions</span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>allocator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>allocator</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=c1>// On success, `foo` will be of type `Data` struct.
+</span><span class=c1></span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>foo</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parse</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=o>&amp;</span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>TokenStream</span><span class=p>.</span><span class=n>init</span><span class=p>(</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    &#34;name&#34;: &#34;John Smith&#34;,</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    &#34;is_alive&#34;: true,</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    &#34;age&#34;: 45,</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    &#34;address&#34;: {</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\        &#34;street_address&#34;: &#34;21 2nd Street&#34;,</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\        &#34;city&#34;: &#34;New York&#34;,</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\        &#34;state&#34;: &#34;NY&#34;,</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\        &#34;postal_code&#34;: &#34;10021-3100&#34;</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    },</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    &#34;children_age&#34;: [12, 8, 21],</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\    &#34;spouse&#34;: null</span><span class=w>
+</span><span class=w>        </span><span class=sh>\\}</span><span class=w>
+</span><span class=w>    </span><span class=p>),</span><span class=w> </span><span class=n>options</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>defer</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parseFree</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=n>foo</span><span class=p>,</span><span class=w> </span><span class=n>options</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqualStrings</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>name</span><span class=p>,</span><span class=w> </span><span class=s>&#34;John Smith&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqual</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>is_alive</span><span class=p>,</span><span class=w> </span><span class=kc>true</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqual</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>age</span><span class=p>,</span><span class=w> </span><span class=mi>45</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqualStrings</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>address</span><span class=p>.</span><span class=n>street_address</span><span class=p>,</span><span class=w> </span><span class=s>&#34;21 2nd Street&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqualSlices</span><span class=p>(</span><span class=n>i8</span><span class=p>,</span><span class=w> </span><span class=n>foo</span><span class=p>.</span><span class=n>children_age</span><span class=p>,</span><span class=w> </span><span class=o>&amp;</span><span class=p>.{</span><span class=w> </span><span class=mi>12</span><span class=p>,</span><span class=w> </span><span class=mi>8</span><span class=p>,</span><span class=w> </span><span class=mi>21</span><span class=w> </span><span class=p>});</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>spouse</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=kc>null</span><span class=p>);</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ <span class=blink>█</span></pre></div><h2 id=decode-json-null><a href=#decode-json-null>Decode: Handling null</a></h2><p>Occasionally, a JSON's key type and its struct type will differ, for
+instance when a key's value contains a null value instead.</p><p>The example below <strong>will return an</strong>
+<code>error.UnexpectedToken</code>.</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>Data</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>url</span><span class=o>:</span><span class=w> </span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>width</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>height</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>json_data</span><span class=w> </span><span class=o>=</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: null,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;width&#34;: 800,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;height&#34;: 600</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\}</span><span class=w>
+</span><span class=w></span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Invalid JSON type: null -&gt; []const u8&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>options</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>ParseOptions</span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>allocator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>allocator</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectError</span><span class=p>(</span><span class=k>error</span><span class=p>.</span><span class=n>UnexpectedToken</span><span class=p>,</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parse</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=o>&amp;</span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>TokenStream</span><span class=p>.</span><span class=n>init</span><span class=p>(</span><span class=n>json_data</span><span class=p>),</span><span class=w> </span><span class=n>options</span><span class=p>));</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ <span class=blink>█</span></pre></div><p>As you can see, <code>Data.url</code> is <code>null</code> instead of a
+valid string type. Easy solution of this would be to simply turn
+<code>Data.url</code> type into an optional type.</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>Data</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>url</span><span class=o>:</span><span class=w> </span><span class=o>?</span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>width</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>height</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>json_data</span><span class=w> </span><span class=o>=</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: null,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;width&#34;: 800,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;height&#34;: 600</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\}</span><span class=w>
+</span><span class=w></span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Valid JSON type: null -&gt; ?[]const u8&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>options</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>ParseOptions</span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>allocator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>allocator</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>foo</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parse</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=o>&amp;</span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>TokenStream</span><span class=p>.</span><span class=n>init</span><span class=p>(</span><span class=n>json_data</span><span class=p>),</span><span class=w> </span><span class=n>options</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>defer</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parseFree</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=n>foo</span><span class=p>,</span><span class=w> </span><span class=n>options</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>url</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=kc>null</span><span class=p>);</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ <span class=blink>█</span></pre></div><h2 id=decode-json-duplicate-unknown><a href=#decode-json-duplicate-unknown>Decode: Handling duplicate/unknown key</a></h2><p><code>std.json.parse()</code> will also return an error if it encounters
+duplicate or unknown keys.</p><p>Suppose we have the following JSON file:</p><div class=window><div class=title>example.json</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=p>{</span>
+    <span class=nt>&#34;url&#34;</span><span class=p>:</span> <span class=kc>null</span><span class=p>,</span>
+    <span class=nt>&#34;width&#34;</span><span class=p>:</span> <span class=mi>800</span><span class=p>,</span>
+    <span class=nt>&#34;height&#34;</span><span class=p>:</span> <span class=mi>600</span><span class=p>,</span>
+    <span class=nt>&#34;bit_depth&#34;</span><span class=p>:</span> <span class=mi>8</span><span class=p>,</span>
+    <span class=nt>&#34;url&#34;</span><span class=p>:</span> <span class=s2>&#34;https://example.org&#34;</span>
+<span class=p>}</span></code></pre></div></div><p>And the following data structure:</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>Data</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>url</span><span class=o>:</span><span class=w> </span><span class=o>?</span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>width</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>height</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span></code></pre></div></div><p>To handle this problem, <code>std.json.parse()</code> accepts an optional
+set of, well, <em>options</em>, that we have to explicitly set.</p><p>From the standard library, <code>std.json.ParseOptions{}</code> has the
+following attributes:</p><div class=window><div class=title>zig/lib/std/json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>pub</span><span class=w> </span><span class=kr>const</span><span class=w> </span><span class=n>ParseOptions</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>allocator</span><span class=o>:</span><span class=w> </span><span class=o>?*</span><span class=n>Allocator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>null</span><span class=p>,</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=c1>/// Behaviour when a duplicate field is encountered.
+</span><span class=c1></span><span class=w>    </span><span class=n>duplicate_field_behavior</span><span class=o>:</span><span class=w> </span><span class=k>enum</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=n>UseFirst</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>Error</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=n>UseLast</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>}</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>.</span><span class=n>Error</span><span class=p>,</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=c1>/// If false, finding an unknown field returns an error.
+</span><span class=c1></span><span class=w>    </span><span class=n>ignore_unknown_fields</span><span class=o>:</span><span class=w> </span><span class=kt>bool</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>false</span><span class=p>,</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=n>allow_trailing_data</span><span class=o>:</span><span class=w> </span><span class=kt>bool</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>false</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span></code></pre></div></div><p>Thus, we can simply override the default options, like so:</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>Data</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>struct</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=n>url</span><span class=o>:</span><span class=w> </span><span class=o>?</span><span class=p>[]</span><span class=kr>const</span><span class=w> </span><span class=kt>u8</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>width</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=n>height</span><span class=o>:</span><span class=w> </span><span class=kt>u32</span><span class=p>,</span><span class=w>
+</span><span class=w></span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>json_data</span><span class=w> </span><span class=o>=</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: null,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;width&#34;: 800,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;height&#34;: 600,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;bit_depth&#34;: 8,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: &#34;https://example.org&#34;</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\}</span><span class=w>
+</span><span class=w></span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Duplicate and unknown keys&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>options</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>ParseOptions</span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>allocator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>allocator</span><span class=p>,</span><span class=w>
+</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>duplicate_field_behavior</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>.</span><span class=n>UseLast</span><span class=p>,</span><span class=w>
+</span><span class=w>        </span><span class=p>.</span><span class=n>ignore_unknown_fields</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w>
+</span><span class=w>    </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>foo</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parse</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=o>&amp;</span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>TokenStream</span><span class=p>.</span><span class=n>init</span><span class=p>(</span><span class=n>json_data</span><span class=p>),</span><span class=w> </span><span class=n>options</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>defer</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>parseFree</span><span class=p>(</span><span class=n>Data</span><span class=p>,</span><span class=w> </span><span class=n>foo</span><span class=p>,</span><span class=w> </span><span class=n>options</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>url</span><span class=w> </span><span class=o>!=</span><span class=w> </span><span class=kc>null</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqualStrings</span><span class=p>(</span><span class=n>foo</span><span class=p>.</span><span class=n>url</span><span class=p>.</span><span class=o>?</span><span class=p>,</span><span class=w> </span><span class=s>&#34;https://example.org&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ <span class=blink>█</span></pre></div><h2 id=decode-json-dynamically><a href=#decode-json-dynamically>Decode JSON dynamically</a></h2><p>In some cases, you don't want to put the decoded JSON into a struct. You
+simply just want to see whether a key exists or not, and/or find the type
+of its value.</p><p>For that, you can do this:</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>json_data</span><span class=w> </span><span class=o>=</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: null,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;width&#34;: 800.25,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: &#34;https://example.org&#34;,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;story&#34;: {</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\        &#34;title&#34;: &#34;The Adventure of Yada Yada&#34;,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\        &#34;chapters&#34;: 210,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\        &#34;scary_parts&#34;: [23, 66, 90, 131]</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    }</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\}</span><span class=w>
+</span><span class=w></span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Decode JSON dynamically&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>var</span><span class=w> </span><span class=n>parser</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>Parser</span><span class=p>.</span><span class=n>init</span><span class=p>(</span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>allocator</span><span class=p>,</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>defer</span><span class=w> </span><span class=n>parser</span><span class=p>.</span><span class=n>deinit</span><span class=p>();</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>var</span><span class=w> </span><span class=n>tree</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>try</span><span class=w> </span><span class=n>parser</span><span class=p>.</span><span class=n>parse</span><span class=p>(</span><span class=n>json_data</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>defer</span><span class=w> </span><span class=n>tree</span><span class=p>.</span><span class=n>deinit</span><span class=p>();</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>root</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>tree</span><span class=p>.</span><span class=n>root</span><span class=p>;</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>root</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=p>.</span><span class=n>Object</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>width</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>root</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>get</span><span class=p>(</span><span class=s>&#34;width&#34;</span><span class=p>).</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>width</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=p>.</span><span class=n>Float</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>width</span><span class=p>.</span><span class=n>Float</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=mf>800.25</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=c1>// The key `height` doesn&#39;t exist, so this variable contains null.
+</span><span class=c1></span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>root</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>contains</span><span class=p>(</span><span class=s>&#34;height&#34;</span><span class=p>)</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>height</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>root</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>get</span><span class=p>(</span><span class=s>&#34;height&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>height</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=kc>null</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>url</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>root</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>get</span><span class=p>(</span><span class=s>&#34;url&#34;</span><span class=p>).</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=c1>// When there are duplicate keys, the one appearing last will be the one
+</span><span class=c1></span><span class=w>    </span><span class=c1>// used.
+</span><span class=c1></span><span class=w>    </span><span class=c1>//
+</span><span class=c1></span><span class=w>    </span><span class=c1>// Also, beware that there is a difference between `null` and `.Null`.
+</span><span class=c1></span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>url</span><span class=w> </span><span class=o>!=</span><span class=w> </span><span class=p>.</span><span class=n>Null</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqualStrings</span><span class=p>(</span><span class=n>url</span><span class=p>.</span><span class=n>String</span><span class=p>,</span><span class=w> </span><span class=s>&#34;https://example.org&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>story</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>root</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>get</span><span class=p>(</span><span class=s>&#34;story&#34;</span><span class=p>).</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>story</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=p>.</span><span class=n>Object</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>story_title</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>story</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>get</span><span class=p>(</span><span class=s>&#34;title&#34;</span><span class=p>).</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqualStrings</span><span class=p>(</span><span class=n>story_title</span><span class=p>.</span><span class=n>String</span><span class=p>,</span><span class=w> </span><span class=s>&#34;The Adventure of Yada Yada&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=c1>// Array handling
+</span><span class=c1></span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>story_scary_parts</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>story</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>get</span><span class=p>(</span><span class=s>&#34;scary_parts&#34;</span><span class=p>).</span><span class=o>?</span><span class=p>;</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>story_scary_parts</span><span class=p>.</span><span class=n>Array</span><span class=p>.</span><span class=n>items</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=p>.</span><span class=n>Integer</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=kr>const</span><span class=w> </span><span class=n>foo</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=o>&amp;</span><span class=p>[</span><span class=n>_</span><span class=p>]</span><span class=kt>i64</span><span class=p>{</span><span class=w> </span><span class=mi>23</span><span class=p>,</span><span class=w> </span><span class=mi>66</span><span class=p>,</span><span class=w> </span><span class=mi>90</span><span class=p>,</span><span class=w> </span><span class=mi>131</span><span class=w> </span><span class=p>};</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>story_scary_parts</span><span class=p>.</span><span class=n>Array</span><span class=p>.</span><span class=n>items</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=n>value</span><span class=p>,</span><span class=w> </span><span class=n>index</span><span class=o>|</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>        </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expectEqual</span><span class=p>(</span><span class=n>value</span><span class=p>.</span><span class=n>Integer</span><span class=p>,</span><span class=w> </span><span class=n>foo</span><span class=p>[</span><span class=n>index</span><span class=p>]);</span><span class=w>
+</span><span class=w>    </span><span class=p>}</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>story</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>contains</span><span class=p>(</span><span class=s>&#34;chapters&#34;</span><span class=p>)</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=kc>true</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>story</span><span class=p>.</span><span class=n>Object</span><span class=p>.</span><span class=n>contains</span><span class=p>(</span><span class=s>&#34;ending&#34;</span><span class=p>)</span><span class=w> </span><span class=o>==</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ <span class=blink>█</span></pre></div><h2 id=validate-json><a href=#validate-json>Validate JSON</a></h2><p>Validating a JSON string is very simple.</p><div class=window><div class=title>json.zig</div><div class=highlight><pre tabindex=0 class=chroma><code class=language-zig data-lang=zig><span class=kr>const</span><span class=w> </span><span class=n>std</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=nb>@import</span><span class=p>(</span><span class=s>&#34;std&#34;</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>invalid_json</span><span class=w> </span><span class=o>=</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: null,</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\}</span><span class=w>
+</span><span class=w></span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=kr>const</span><span class=w> </span><span class=n>valid_json</span><span class=w> </span><span class=o>=</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\{</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\    &#34;url&#34;: null</span><span class=w>
+</span><span class=w>    </span><span class=sh>\\}</span><span class=w>
+</span><span class=w></span><span class=p>;</span><span class=w>
+</span><span class=w>
+</span><span class=w></span><span class=k>test</span><span class=w> </span><span class=s>&#34;Validate JSON&#34;</span><span class=w> </span><span class=p>{</span><span class=w>
+</span><span class=w>    </span><span class=kr>var</span><span class=w> </span><span class=n>is_valid</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>validate</span><span class=p>(</span><span class=n>invalid_json</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=o>!</span><span class=n>is_valid</span><span class=p>);</span><span class=w>
+</span><span class=w>
+</span><span class=w>    </span><span class=n>is_valid</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>json</span><span class=p>.</span><span class=n>validate</span><span class=p>(</span><span class=n>valid_json</span><span class=p>);</span><span class=w>
+</span><span class=w>    </span><span class=k>try</span><span class=w> </span><span class=n>std</span><span class=p>.</span><span class=n>testing</span><span class=p>.</span><span class=n>expect</span><span class=p>(</span><span class=n>is_valid</span><span class=p>);</span><span class=w>
+</span><span class=w></span><span class=p>}</span></code></pre></div></div><div class=window><div class=title>Terminal</div><pre class=terminal>$ zig test json.zig
+All 1 tests passed.
+$ <span class=blink>█</span></pre></div></article></main><footer>Copyright &#169; 2021 -
+Bagus <span class=monospace>nofmal</span> Bimasakti
+&#183; <a href=../>Home</a>
+&#183; <a href=../about/>About</a></footer></body></html>
