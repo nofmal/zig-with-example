@@ -1,0 +1,239 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "String Handling",
+    "url": "string-handling",
+    "draft": false
+}
+
+<p>
+    Reminder that, despite the title of this example, the concept of string
+    doesn't actually exist in Zig. Instead, a string is an array of bytes
+    (<code>u8</code>).
+</p>
+
+<p>
+    Which is why, most of the functions here will also work to handle arrays
+    whose individual types are not <code>u8</code>.
+</p>
+
+<h2 id="string-copy"><a href="#string-copy">Copy</a></h2>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String copy" {
+    const allocator = std.testing.allocator;
+
+    const message = "The quick brown fox.";
+
+    const copied = try allocator.alloc(u8, message.len);
+    defer allocator.free(copied);
+
+    std.mem.copy(u8, copied, message);
+
+    std.debug.print("\nOriginal: {s}\n    Copy: {s}\n", .{ message, copied });
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+Test [1/1] test "String copy"...
+Original: The quick brown fox.
+    Copy: The quick brown fox.
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    Alternatively, if you're using an allocator, you can instead duplicate the
+    string by using <code>Allocator.dupe()</code>.
+</p>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String copy/dupe" {
+    const allocator = std.testing.allocator;
+
+    const message = "The quick brown fox.";
+
+    const copied = try allocator.dupe(u8, message);
+    defer allocator.free(copied);
+
+    std.debug.print("\nOriginal: {s}\n    Copy: {s}\n", .{ message, copied });
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+Test [1/1] test "String copy/dupe"...
+Original: The quick brown fox.
+    Copy: The quick brown fox.
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="string-equal"><a href="#string-equal">Equal</a></h2>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String equal" {
+    const allocator = std.testing.allocator;
+
+    const message = "The quick brown fox.";
+
+    const copied = try allocator.dupe(u8, message);
+    defer allocator.free(copied);
+
+    const is_equal = std.mem.eql(u8, copied, message);
+
+    std.debug.print("\nOriginal: {s}\n    Copy: {s}\n", .{ message, copied });
+    std.debug.print("Are the two strings equal? {}\n", .{is_equal});
+
+    try std.testing.expect(is_equal);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+Test [1/1] test "String equal"...
+Original: The quick brown fox.
+    Copy: The quick brown fox.
+Are the two strings equal? true
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    Be extra careful when using this function to compare C null-terminated
+    array, however, as, unlike C's <code>strcmp</code>, this function
+    doesn't stop when it reaches a zero value.
+</p>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String equal" {
+    const message0 = "Equal?";
+    const message1 = &[_]u8{ 'E', 'q', 'u', 'a', 'l', '?', 0, 0 };
+
+    const is_equal = std.mem.eql(u8, message0, message1);
+
+    try std.testing.expect(is_equal);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+Test [2/1] test "String equal"... FAIL (TestUnexpectedResult)
+/home/zig/std/testing.zig:309:14: 0x7ff6d97231fb in std.testing.expect (test.obj)
+    if (!ok) return error.TestUnexpectedResult;
+             ^
+/home/zig/test.zig:9:5: 0x7ff6d9721890 in test "String equal" (test.obj)
+    try std.testing.expect(is_equal);
+    ^
+0 passed; 0 skipped; 1 failed.
+error: the following test command failed with exit code 1:
+zig-cache/o/12cf2178032725d246a4b465b2a8361b/test /home/zig/zig
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    One way to solve this is by counting how many bytes it takes until it
+    reaches the zero value, then create a slice out of it.
+</p>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String equal" {
+    const message0 = "Equal?";
+    const message1 = &[_]u8{ 'E', 'q', 'u', 'a', 'l', '?', 0, 0 };
+
+    var message1_length: usize = 0;
+
+    for (message1) |byte| {
+        if (byte == 0) break;
+        message1_length += 1;
+    }
+
+    const message1_slice = message1[0 .. message1_length];
+
+    const is_equal = std.mem.eql(u8, message0, message1_slice);
+
+    try std.testing.expect(is_equal);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    Or alternatively, you can just use <code>std.mem.sliceTo()</code>:
+</p>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String equal" {
+    const message0 = "Equal?";
+    const message1 = &[_]u8{ 'E', 'q', 'u', 'a', 'l', '?', 0, 0 };
+
+    const message1_slice = std.mem.sliceTo(message1, 0);
+
+    const is_equal = std.mem.eql(u8, message0, message1_slice);
+
+    try std.testing.expect(is_equal);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="string-contains"><a href="#string-contains">Contains</a></h2>
+<p>
+    To check whether a substring is present in a given string, you can use
+    <code>std.mem.count()</code>.
+</p>
+<p>
+    <code>std.mem.count()</code> returns how many times a substring is detected
+    inside the string.
+</p>
+<div class="window">
+    <div class="title">string_handling.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "String contains" {
+    const message = "Hello, world!";
+
+    var contains = if (std.mem.count(u8, message, "Hell") > 0) true else false;
+    try std.testing.expect(contains);
+
+    contains = if (std.mem.count(u8, message, "What") > 0) true else false;
+    try std.testing.expect(!contains);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test string_handling.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>

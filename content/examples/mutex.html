@@ -1,0 +1,43 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "Mutex",
+    "url": "mutex",
+    "draft": true
+}
+
+<div class="window">
+    <div class="title">random_number.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+var counter: u64 = 0;
+var mutex = std.Thread.Mutex{};
+
+fn doSomething(msg: []const u8, value: u8, Writer: std.fs.File.Writer) void {
+    //const held = mutex.acquire();
+    //defer held.release();
+
+    var i: usize = 0;
+
+    while (i < 10) : (i += 1) {
+        counter +%= value;
+        Writer.print("{s}: counter -> {d}\n", .{ msg, counter }) catch {};
+    }
+}
+
+test "" {
+    const stdout = std.io.getStdOut().writer();
+    stdout.print("\n", .{}) catch {};
+
+    var threads: [3]std.Thread = undefined;
+
+    threads[0] = try std.Thread.spawn(.{}, doSomething, .{" first thread", 2, stdout});
+    threads[1] = try std.Thread.spawn(.{}, doSomething, .{"second thread", 255, stdout});
+    threads[2] = try std.Thread.spawn(.{}, doSomething, .{" third thread", 128, stdout});
+
+    for (threads) |thread|
+        thread.join();
+}
+{{< / highlight >}}
+</div>

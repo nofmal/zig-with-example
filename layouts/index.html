@@ -1,0 +1,49 @@
+{{ define "main" }}
+
+<p>
+    <a href="https://ziglang.org" target="_blank">Zig</a> is a
+    general-purpose programming language and toolchain for maintaining
+    <strong>robust</strong>, <strong>optimal</strong>, and
+    <strong>reusable</strong> software.
+</p>
+
+<p>
+    <a href="{{ .Site.BaseURL | relURL }}">{{ .Site.Title }}</a> is a collection
+    of code examples written in Zig to show the solutions to various common
+    programming problems.
+</p>
+
+<p>
+    Most of these examples assume that you have some prior knowledge about the
+    language. If you're new to the language, it's highly recommended that you
+    read the <a href="https://ziglang.org/learn/" target="_blank">official
+    documentations</a> first.
+</p>
+
+{{ $tutorialPages := where (where .Site.Pages "Kind" "page") "Section" "examples" }}
+
+{{ if len $tutorialPages | ne 0 }}
+    <ol id="list-homepage">
+    {{ range $tutorialPages }}
+        {{ $path := .RelPermalink }}
+        <li><h2><a href="{{ $path }}">{{ .Title | safeHTML }}</a></h2></li>
+        {{ with print "content/" .File.Path | readFile }}
+            {{ $regex := findRE `<h2 id="[\s|\S]+?<a href="[\s|\S]+?</h2>` . }}
+            {{ if len $regex | ne 0 }}
+                <ol>
+                    {{ range $regex }}
+                        {{ $pathID := replaceRE `<h2 [\s|\S]*href="([\s|\S]+?)">[\s|\S]+` "$1" . | print $path }}
+                        {{ $pathTitle := replaceRE `<h2 [\s|\S]*href=".+?">\s*([\s|\S]+)</a>[\s|\S]+` "$1" . }}
+
+                        <li>
+                            <a href="{{ $pathID }}">{{ $pathTitle | safeHTML }}</a>
+                        </li>
+                    {{ end }}
+                </ol>
+            {{ end }}
+        {{ end }}
+    {{ end }}
+    </ol>
+{{ end }}
+
+{{ end }}

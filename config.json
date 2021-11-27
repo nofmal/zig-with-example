@@ -1,0 +1,31 @@
+{
+    "baseURL": "https://zigwithexample.org/",
+    "disableAliases": true,
+    "disableHugoGeneratorInject": true,
+    "disableKinds": ["RSS", "section", "sitemap", "taxonomy", "term"],
+    "disableLiveReload": true,
+    "languageCode": "en-us",
+    "pygmentsUseClasses": true,
+    "relativeURLs": true,
+    "theme": "shamare",
+    "title": "Zig w/ Example",
+
+    "author": {
+        "name": "Bagus Bimasakti",
+        "email": "ariaoverskies@gmail.com"
+    },
+    "params": {
+        "copyrightYear": 2021,
+        "description": "asdf"
+    },
+    "permalinks": {
+        "examples": "/:title"
+    },
+    "minify": {
+        "tdewolff": {
+            "html": {
+                "keepWhitespace": false
+            }
+        }
+    }
+}

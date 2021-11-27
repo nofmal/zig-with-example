@@ -1,0 +1,21 @@
+{{ $copyrightYear := now.Year }}
+{{ $currentYear := "" }}
+
+{{ with int .Site.Params.copyrightYear }}
+    {{ if ne . $copyrightYear }}
+        {{ $currentYear = printf "-%d" $copyrightYear }}
+        {{ $copyrightYear = . }}
+    {{ end }}
+{{ end }}
+
+{{ $author := "author.name" }}
+{{ with .Site.Author.name }}
+    {{ $author = . }}
+{{ end }}
+
+Copyright &#169; {{ $copyrightYear }}{{ $currentYear }} - {{ $author }}
+&#183; <a href="{{ relref . .Site.BaseURL }}">Home</a>
+
+{{ with .Site.GetPage "/about" }}
+    &#183; <a href="{{ .RelPermalink }}">About</a>
+{{ end }}

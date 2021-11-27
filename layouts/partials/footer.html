@@ -1,0 +1,17 @@
+{{ $copyrightYear := now.Year }}
+{{ $currentYear := "" }}
+
+{{ with int .Site.Params.copyrightYear }}
+    {{ if ne . $copyrightYear }}
+        {{ $currentYear = printf "-%d" $copyrightYear }}
+        {{ $copyrightYear = . }}
+    {{ end }}
+{{ end }}
+
+Copyright &#169; {{ $copyrightYear }}{{ $currentYear }} -
+Bagus <span class="monospace">nofmal</span> Bimasakti
+&#183; <a href="{{ .Site.BaseURL | relURL }}">Home</a>
+
+{{ with .Site.GetPage "/about" }}
+    &#183; <a href="{{ .RelPermalink }}">About</a>
+{{ end }}

@@ -1,0 +1,476 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "JSON",
+    "url": "json",
+    "draft": false
+}
+
+<h2 id="encode-json"><a href="#encode-json">Encode into JSON</a></h2>
+<p>
+    Also known as <em>JSON marshalling</em>.
+</p>
+<p>
+    In this example, we will encode a struct into a JSON string and save it
+    into a file named <span class="monospace">data.json</span>.
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const Data = struct {
+    name: []const u8,
+    is_alive: bool,
+    age: u8,
+    address: struct {
+        street_address: []const u8,
+        city: []const u8,
+        state: []const u8,
+        postal_code: []const u8,
+    },
+    children_age: []const i8,
+    spouse: ?[]const u8,
+};
+
+test "Encode a struct into a JSON string" {
+    const foo = Data{
+        .name = "John Smith",
+        .is_alive = true,
+        .age = 45,
+        .address = .{
+            .street_address = "21 2nd Street",
+            .city = "New York",
+            .state = "NY",
+            .postal_code = "10021-3100",
+        },
+        .children_age = &.{ 12, 8, 21 },
+        .spouse = null,
+    };
+
+    var file = try std.fs.cwd().createFile("data.json", .{});
+    defer file.close();
+
+    const options = std.json.StringifyOptions{
+        .whitespace = .{
+            .indent_level = 0,
+            .indent = .{ .Space = 4 },
+            .separator = true,
+        },
+    };
+
+    try std.json.stringify(foo, options, file.writer());
+
+    _ = try file.write("\n");
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ cat data.json
+{
+    "name": "John Smith",
+    "is_alive": true,
+    "age": 45,
+    "address": {
+        "street_address": "21 2nd Street",
+        "city": "New York",
+        "state": "NY",
+        "postal_code": "10021-3100"
+    },
+    "children_age": [
+        12,
+        8,
+        21
+    ],
+    "spouse": null
+}
+
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="decode-json"><a href="#decode-json">Decode from JSON</a></h2>
+<p>
+    Also known as <em>JSON unmarshalling</em>.
+</p>
+<p>
+    Suppose we know about the structure of the JSON data, and that our struct
+    is guaranteed to be able to handle all of the parsed data.
+</p>
+<p>
+    To unmarshal, we use <code>std.json.parse()</code>.
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const Data = struct {
+    name: []const u8,
+    is_alive: bool,
+    age: u8,
+    address: struct {
+        street_address: []const u8,
+        city: []const u8,
+        state: []const u8,
+        postal_code: []const u8,
+    },
+    children_age: []const i8,
+    spouse: ?[]const u8,
+};
+
+test "Decode into a struct from a JSON string" {
+    const options = std.json.ParseOptions{
+        .allocator = std.testing.allocator,
+    };
+
+    // On success, `foo` will be of type `Data` struct.
+    const foo = try std.json.parse(Data, &std.json.TokenStream.init(
+        \\{
+        \\    "name": "John Smith",
+        \\    "is_alive": true,
+        \\    "age": 45,
+        \\    "address": {
+        \\        "street_address": "21 2nd Street",
+        \\        "city": "New York",
+        \\        "state": "NY",
+        \\        "postal_code": "10021-3100"
+        \\    },
+        \\    "children_age": [12, 8, 21],
+        \\    "spouse": null
+        \\}
+    ), options);
+
+    defer std.json.parseFree(Data, foo, options);
+
+    try std.testing.expectEqualStrings(foo.name, "John Smith");
+    try std.testing.expectEqual(foo.is_alive, true);
+    try std.testing.expectEqual(foo.age, 45);
+    try std.testing.expectEqualStrings(foo.address.street_address, "21 2nd Street");
+    try std.testing.expectEqualSlices(i8, foo.children_age, &.{ 12, 8, 21 });
+    try std.testing.expect(foo.spouse == null);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="decode-json-null"><a href="#decode-json-null">Decode: Handling null</a></h2>
+<p>
+    Occasionally, a JSON's key type and its struct type will differ, for
+    instance when a key's value contains a null value instead.
+</p>
+<p>
+    The example below <strong>will return an</strong>
+    <code>error.UnexpectedToken</code>.
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const Data = struct {
+    url: []const u8,
+    width: u32,
+    height: u32,
+};
+
+const json_data =
+    \\{
+    \\    "url": null,
+    \\    "width": 800,
+    \\    "height": 600
+    \\}
+;
+
+test "Invalid JSON type: null -> []const u8" {
+    const options = std.json.ParseOptions{
+        .allocator = std.testing.allocator,
+    };
+
+    try std.testing.expectError(error.UnexpectedToken, std.json.parse(Data, &std.json.TokenStream.init(json_data), options));
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    As you can see, <code>Data.url</code> is <code>null</code> instead of a
+    valid string type. Easy solution of this would be to simply turn
+    <code>Data.url</code> type into an optional type.
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const Data = struct {
+    url: ?[]const u8,
+    width: u32,
+    height: u32,
+};
+
+const json_data =
+    \\{
+    \\    "url": null,
+    \\    "width": 800,
+    \\    "height": 600
+    \\}
+;
+
+test "Valid JSON type: null -> ?[]const u8" {
+    const options = std.json.ParseOptions{
+        .allocator = std.testing.allocator,
+    };
+
+    const foo = try std.json.parse(Data, &std.json.TokenStream.init(json_data), options);
+    defer std.json.parseFree(Data, foo, options);
+
+    try std.testing.expect(foo.url == null);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="decode-json-duplicate-unknown"><a href="#decode-json-duplicate-unknown">Decode: Handling duplicate/unknown key</a></h2>
+<p>
+    <code>std.json.parse()</code> will also return an error if it encounters
+    duplicate or unknown keys.
+</p>
+<p>
+    Suppose we have the following JSON file:
+</p>
+<div class="window">
+    <div class="title">example.json</div>
+{{< highlight json >}}
+{
+    "url": null,
+    "width": 800,
+    "height": 600,
+    "bit_depth": 8,
+    "url": "https://example.org"
+}
+{{< / highlight >}}
+</div>
+<p>
+    And the following data structure:
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const Data = struct {
+    url: ?[]const u8,
+    width: u32,
+    height: u32,
+};
+{{< / highlight >}}
+</div>
+<p>
+    To handle this problem, <code>std.json.parse()</code> accepts an optional
+    set of, well, <em>options</em>, that we have to explicitly set.
+</p>
+<p>
+    From the standard library, <code>std.json.ParseOptions{}</code> has the
+    following attributes:
+</p>
+<div class="window">
+    <div class="title">zig/lib/std/json.zig</div>
+{{< highlight zig >}}
+pub const ParseOptions = struct {
+    allocator: ?*Allocator = null,
+
+    /// Behaviour when a duplicate field is encountered.
+    duplicate_field_behavior: enum {
+        UseFirst,
+        Error,
+        UseLast,
+    } = .Error,
+
+    /// If false, finding an unknown field returns an error.
+    ignore_unknown_fields: bool = false,
+
+    allow_trailing_data: bool = false,
+};
+{{< / highlight >}}
+</div>
+<p>
+    Thus, we can simply override the default options, like so:
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const Data = struct {
+    url: ?[]const u8,
+    width: u32,
+    height: u32,
+};
+
+const json_data =
+    \\{
+    \\    "url": null,
+    \\    "width": 800,
+    \\    "height": 600,
+    \\    "bit_depth": 8,
+    \\    "url": "https://example.org"
+    \\}
+;
+
+test "Duplicate and unknown keys" {
+    const options = std.json.ParseOptions{
+        .allocator = std.testing.allocator,
+
+        .duplicate_field_behavior = .UseLast,
+        .ignore_unknown_fields = true,
+    };
+
+    const foo = try std.json.parse(Data, &std.json.TokenStream.init(json_data), options);
+    defer std.json.parseFree(Data, foo, options);
+
+    try std.testing.expect(foo.url != null);
+    try std.testing.expectEqualStrings(foo.url.?, "https://example.org");
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="decode-json-dynamically"><a href="#decode-json-dynamically">Decode JSON dynamically</a></h2>
+<p>
+    In some cases, you don't want to put the decoded JSON into a struct. You
+    simply just want to see whether a key exists or not, and/or find the type
+    of its value.
+</p>
+<p>
+    For that, you can do this:
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const json_data =
+    \\{
+    \\    "url": null,
+    \\    "width": 800.25,
+    \\    "url": "https://example.org",
+    \\    "story": {
+    \\        "title": "The Adventure of Yada Yada",
+    \\        "chapters": 210,
+    \\        "scary_parts": [23, 66, 90, 131]
+    \\    }
+    \\}
+;
+
+test "Decode JSON dynamically" {
+    var parser = std.json.Parser.init(std.testing.allocator, false);
+    defer parser.deinit();
+
+    var tree = try parser.parse(json_data);
+    defer tree.deinit();
+
+    const root = tree.root;
+    try std.testing.expect(root == .Object);
+
+    const width = root.Object.get("width").?;
+    try std.testing.expect(width == .Float);
+    try std.testing.expect(width.Float == 800.25);
+
+    // The key `height` doesn't exist, so this variable contains null.
+    try std.testing.expect(root.Object.contains("height") == false);
+    const height = root.Object.get("height");
+    try std.testing.expect(height == null);
+
+    const url = root.Object.get("url").?;
+
+    // When there are duplicate keys, the one appearing last will be the one
+    // used.
+    //
+    // Also, beware that there is a difference between `null` and `.Null`.
+    try std.testing.expect(url != .Null);
+    try std.testing.expectEqualStrings(url.String, "https://example.org");
+
+    const story = root.Object.get("story").?;
+    try std.testing.expect(story == .Object);
+
+    const story_title = story.Object.get("title").?;
+    try std.testing.expectEqualStrings(story_title.String, "The Adventure of Yada Yada");
+
+    // Array handling
+    const story_scary_parts = story.Object.get("scary_parts").?;
+    try std.testing.expect(story_scary_parts.Array.items[0] == .Integer);
+
+    const foo = &[_]i64{ 23, 66, 90, 131 };
+
+    for (story_scary_parts.Array.items) |value, index| {
+        try std.testing.expectEqual(value.Integer, foo[index]);
+    }
+
+    try std.testing.expect(story.Object.contains("chapters") == true);
+    try std.testing.expect(story.Object.contains("ending") == false);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="validate-json"><a href="#validate-json">Validate JSON</a></h2>
+<p>
+    Validating a JSON string is very simple.
+</p>
+<div class="window">
+    <div class="title">json.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+const invalid_json =
+    \\{
+    \\    "url": null,
+    \\}
+;
+
+const valid_json =
+    \\{
+    \\    "url": null
+    \\}
+;
+
+test "Validate JSON" {
+    var is_valid = std.json.validate(invalid_json);
+    try std.testing.expect(!is_valid);
+
+    is_valid = std.json.validate(valid_json);
+    try std.testing.expect(is_valid);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test json.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>

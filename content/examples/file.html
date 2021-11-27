@@ -1,0 +1,315 @@
+{
+    "description": "qwerty",
+    "keywords": "file input output i/o",
+    "title": "File",
+    "url": "file",
+    "draft": false
+}
+
+<h2 id="create-file"><a href="#create-file">Create/write file</a></h2>
+<p>
+    Suppose we want to create a file named
+    <span class="monospace">sample.txt</span> in the current directory. To do
+    that you can do this:
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "Create/write file" {
+    var file = try std.fs.cwd().createFile("sample.txt", .{});
+    defer file.close();
+
+    _ = try file.write("Hello, world!\n");
+    _ = try file.write("Nice day we're having today.\n");
+    _ = try file.write("What have you been up to lately?\n");
+    _ = try file.write("H-hey, why did you pull out that knife...?\n");
+
+    const Writer = file.writer();
+
+    const phone_number = 911;
+
+    try Writer.print("Help! Someone, please call {d}!\n\n", .{phone_number});
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test file.zig
+All 1 tests passed.
+$ cat sample.txt
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help me! Someone, please call 911!
+
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="append-file"><a href="#append-file">Append data to file</a></h2>
+<p>
+    However, <code>createFile()</code> by default will overwrite
+    the existing file. If you wish to append to the file instead,
+    do this:
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+....
+    var file = try std.fs.cwd().createFile("sample.txt", .{ .truncate = false });
+    // or this:
+    var file = try std.fs.cwd().openFile("sample.txt", .{ .write = true });
+
+    defer file.close();
+
+    // Set the current position of the file to the end.
+    try file.seekFromEnd(0);
+    ....
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test file.zig
+All 1 tests passed.
+$ cat sample.txt
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help me! Someone, please call 911!
+
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help me! Someone, please call 911!
+
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="check-if-file-exists"><a href="#check-if-file-exists">Check if a file exists</a></h2>
+<p>
+    One way to check whether a file exists or not is by calling
+    <code>openFile()</code> and catch if it returns an
+    <code>error.FileNotFound</code> instead.
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+// Given the following list of files:
+// .
+// ├─ file.zig
+// └─ sample.txt
+
+const std = @import("std");
+
+fn fileExists(path: []const u8) !bool {
+    const file = std.fs.cwd().openFile(path, .{}) catch |err| switch (err) {
+        error.FileNotFound => return false,
+        else => return err,
+    };
+
+    file.close();
+
+    return true;
+}
+
+test "Check if a file exists" {
+    try std.testing.expect(try fileExists("sample.txt"));
+    try std.testing.expect(!try fileExists("does_not_exist.txt"));
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test file.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="read-file"><a href="#read-file">Read file</a></h2>
+<p>
+    To read a file and store its entire data inside a slice of bytes using
+    heap allocation, we do this:
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+pub fn main() !void {
+    const allocator = std.heap.page_allocator;
+    const max_size = std.math.maxInt(usize);
+
+    var data = try std.fs.cwd().readFileAlloc(allocator, "sample.txt", max_size);
+    defer allocator.free(data);
+
+    const printToStdout = std.io.getStdOut().writer().print;
+
+    printToStdout("{s}", .{data}) catch {};
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig build-exe file.zig
+$ ./file
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help! Someone, please call 911!
+
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help! Someone, please call 911!
+
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="read-file-small-chunks"><a href="#read-file-small-chunks">Read file in small chunks</a></h2>
+<p>
+    In case you're dealing with a huge file, or you simply just
+    want to read the file in certain bytes at a time, you can
+    instead use a stack-allocated buffer, like so:
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+pub fn main() !void {
+    const file = try std.fs.cwd().openFile("sample.txt", .{});
+    defer file.close();
+
+    const printToStdout = std.io.getStdOut().writer().print;
+
+    var buffer: [64]u8 = undefined;
+
+    // Or use heap-allocated buffer instead.
+    //var buffer = try std.heap.page_allocator.alloc(u8, 64);
+    //defer std.heap.page_allocator.free(buffer);
+
+    var file_size: usize = 0;
+
+    while (true) {
+        const bytes_read = try file.read(&buffer);
+
+        if (bytes_read == 0)
+            break;
+
+        file_size += bytes_read;
+
+        printToStdout("{s}", .{buffer[0 .. bytes_read]}) catch {};
+    }
+
+    printToStdout("\nFile size is {d} bytes\n", .{file_size}) catch {};
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig build-exe file.zig
+$ ./file
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help! Someone, please call 911!
+
+Hello, world!
+Nice day we're having today.
+What have you been up to lately?
+H-hey, why did you pull out that knife...?
+Help! Someone, please call 911!
+
+
+File size is 304 bytes
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="read-write-file"><a href="#read-write-file">Read/write file</a></h2>
+<p>
+    By default, all files opened with <code>openFile()</code> are
+    read-only. If you want to modify them, you have to pass the
+    option <code>.{ .write = true }</code> first.
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "Read/write file" {
+    const file = try std.fs.cwd().openFile("sample.txt", .{ .write = true });
+    defer file.close();
+
+    const file_size = try file.getEndPos();
+
+    while (true) {
+        const current_position = try file.getPos();
+
+        if (current_position + 4 >= file_size)
+            break;
+
+        try file.seekBy(4);
+
+        try file.writer().writeByte('a');
+    }
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test file.zig
+All 1 tests passed.
+$ cat sample.txt
+Hella, woald!
+aice aay wa're aavina today.
+Waat have yau bean upato latelya
+H-hay, way dia youapullaout ahat anifea..?
+aelp!aSomeane, aleasa cala 911a
+
+Healo, aorlda
+Nica dayawe'ra havang taday.aWhatahaveayou aeen ap toalateay?
+Hahey,awhy aid yau pual oua thaa kniae...a
+Hela! Soaeonea please call 9a1!
+
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="delete-file"><a href="#delete-file">Delete file</a></h2>
+<p>
+    Deleting a file is very easy.
+</p>
+<div class="window">
+    <div class="title">file.zig</div>
+{{< highlight zig >}}
+// Given the following list of files:
+// .
+// ├─ file.zig
+// └─ sample.txt
+
+const std = @import("std");
+
+test "Delete file" {
+    std.fs.cwd().deleteFile("sample.txt") catch |err| switch (err) {
+        error.FileNotFound => {},
+        else => return err,
+    };
+
+    const has_been_deleted = std.fs.cwd().openFile("sample.txt", .{});
+
+    try std.testing.expectError(error.FileNotFound, has_been_deleted);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test file.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>

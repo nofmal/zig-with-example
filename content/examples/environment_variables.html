@@ -1,0 +1,41 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "Environment Variables",
+    "url": "environment-variables",
+    "draft": false
+}
+
+<h2 id="printenv"><a href="#printenv">List all environment variables</a></h2>
+<div class="window">
+    <div class="title">env_vars.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "printenv" {
+    const allocator = std.testing.allocator;
+
+    std.debug.print("\n", .{});
+
+    var env_map = try std.process.getEnvMap(allocator);
+    defer env_map.deinit();
+
+    var iter = env_map.iterator();
+
+    while (iter.next()) |entry| {
+        std.debug.print("{s}={s}\n", .{ entry.key_ptr.*, entry.value_ptr.* });
+    }
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test env_vars.zig
+Test [1/1] test "printenv"...
+...
+PWD=/home/zig
+SHELL=/bin/bash
+TERM=xterm
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>

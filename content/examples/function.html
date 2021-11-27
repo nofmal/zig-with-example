@@ -1,0 +1,160 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "Function",
+    "url": "function",
+    "draft": false
+}
+
+<h2 id="anonymous-function"><a href="#anonymous-function">Anonymous function</a></h2>
+<p>
+    asdf.
+</p>
+
+<h2 id="nested-function"><a href="#nested-function">Nested function</a></h2>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">function.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "Nested function with anonymous function" {
+    const Writer = std.io.getStdOut().writer();
+    Writer.print("\n", .{}) catch {};
+
+    makeList(Writer, ". ");
+}
+
+fn makeList(Writer: std.fs.File.Writer, separator: []const u8) void {
+    const makeItem = struct {
+        var counter: usize = 0;
+
+        fn makeItem(Wr: std.fs.File.Writer, sep: []const u8, item: []const u8) void {
+            counter += 1;
+            Wr.print("{d}{s}{s}\n", .{ counter, sep, item }) catch return;
+        }
+    }.makeItem;
+
+    makeItem(Writer, separator, "first");
+    makeItem(Writer, separator, "second");
+    makeItem(Writer, separator, "third");
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test variadic_function.zig
+Test [1/1] test "Nested function with anonymous function"...
+1. first
+2. second
+3. third
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="variadic-function"><a href="#variadic-function">Variadic function</a></h2>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">function.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+const expect = std.testing.expect;
+
+test "Variadic function" {
+    var twelve: u8 = 12;
+    var fifty_one: u8 = 51;
+
+    const foo = sum(u8, .{ 4, 1, twelve, fifty_one, 33, 41, 99 });
+    try expect(foo == 241);
+
+    var asdf: f32 = 219.231;
+
+    const bar = sum(f32, .{ 21.41, 132.111, 521.122224, asdf, 10 });
+    try expect(bar < 1000);
+}
+
+fn sum(comptime T: type, args: anytype) T {
+    var answer: T = 0;
+
+    // The trick here is to iterate over the `args` tuple at compile-time.
+    comptime {
+        var i: usize = 0;
+
+        inline while (i < args.len) : (i += 1)
+            answer += args[i];
+    }
+
+    return answer;
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test function.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">function.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+const expect = std.testing.expect;
+
+test "Variadic function" {
+    var twelve: u8 = 12;
+    var fifty_one: u8 = 51;
+
+    const foo = sum(u8, .{ 4, 1, twelve, fifty_one, 33, 41, 99 });
+    try expect(foo == 241);
+
+    var asdf: f32 = 219.231;
+
+    const bar = sum(f32, .{ 21.41, 132.111, 521.122224, asdf, 10 });
+    try expect(bar < 1000);
+}
+
+fn sum(comptime T: type, args: anytype) T {
+    const type_info = @typeInfo(T);
+    switch (type_info) {
+        .Int,
+        .Float => {},
+        else => @compileError("Expected integer or floating type, found " ++ @typeName(T)),
+    }
+
+    const ArgsType = @TypeOf(args);
+    if (@typeInfo(ArgsType) != .Struct)
+        @compileError("Expected tuple or struct, found " ++ @typeName(ArgsType));
+
+    const fields_info = std.meta.fields(ArgsType);
+
+    var answer: T = 0;
+
+    comptime {
+        var i: usize = 0;
+
+        inline while (i < fields_info.len) : (i += 1) {
+            switch (type_info) {
+                .Int => answer +%= @field(args, fields_info[i].name),
+                .Float => answer += @field(args, fields_info[i].name),
+                else => unreachable,
+            }
+        }
+    }
+
+    return answer;
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test function.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>

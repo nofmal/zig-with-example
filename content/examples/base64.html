@@ -1,0 +1,100 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "Base64",
+    "url": "base64",
+    "draft": true
+}
+
+<h2 id="base64-encode"><a href="#base64-encode">Encode into Base64</a></h2>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">base64.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "Base64 encoding" {
+    var buffer: [256]u8 = undefined;
+
+    const message = "Many hands make light work.";
+    const expected_encoded = "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu";
+
+    const encoded = std.base64.standard_encoder.encode(&buffer, message);
+
+    try std.testing.expectEqualStrings(encoded, expected_encoded);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test base64.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+<p>
+    asdf
+</p>
+<div class="window">
+    <div class="title">base64.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "Base64 encoding (calculate length)" {
+    const allocator = std.testing.allocator;
+
+    const encoder = std.base64.standard_encoder;
+    const message = "Many hands make light work.";
+
+    const encoded_size = encoder.calcSize(message.len);
+
+    const buffer = try allocator.alloc(u8, encoded_size);
+    defer allocator.free(buffer);
+
+    _ = encoder.encode(buffer, message);
+
+    const expected_encoded = "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu";
+    try std.testing.expectEqualStrings(buffer, expected_encoded);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test base64.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="base64-decode"><a href="#base64-decode">Decode from Base64</a></h2>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">base64.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+
+test "Base64 decoding" {
+    var buffer: [256]u8 = undefined;
+
+    const decoder = std.base64.standard_decoder;
+    const expected_decoded = "Many hands make light work.";
+
+    const decoded = buffer[0 .. try decoder.calcSizeForSlice("TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu")];
+    try decoder.decode(decoded, "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu");
+
+    try std.testing.expectEqualStrings(decoded, expected_decoded);
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test base64.zig
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<p>
+    #todo: custom Base64 index table and optional padding char
+</p>

@@ -1,0 +1,246 @@
+{
+    "description": "",
+    "keywords": "",
+    "title": "Random Number Generator",
+    "url": "rng",
+    "draft": false
+}
+
+<p>
+    Zig's standard library provides the following
+    <abbr title="Pseudorandom number generator">PRNG</abbr> algorithms:
+</p>
+<ul>
+    <li>Gimli</li>
+    <li>Isaac64</li>
+    <li>PCG</li>
+    <li>Sfc64</li>
+    <li>Xoroshiro128</li>
+    <li>Xoshiro256</li>
+</ul>
+<p>
+    The default algorithm for fast but insecure RNG is Xoshiro256, while
+    the default for use in cryptography is Gimli.
+</p>
+
+<h2 id="int-float-bool"><a href="#int-float-bool">Int/float/bool</a></h2>
+<p>
+    For this next example, we will use the default Xoshiro256.
+</p>
+<div class="window">
+    <div class="title">random_number.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+const print = std.debug.print;
+
+test "Random int/float/bool" {
+    // First, it's required that we seed the RNG.
+    //
+    // The most common way to do this is to use the current time.
+    const seed = @truncate(u64, @bitCast(u128, std.time.nanoTimestamp()));
+    var prng = std.rand.DefaultPrng.init(seed);
+
+    const format =
+        \\
+        \\random u8[0]: {d}
+        \\random u8[1]: {d}
+        \\random u8[2]: {d}
+        \\
+        \\random i12[0]: {d}
+        \\random i12[1]: {d}
+        \\random i12[2]: {d}
+        \\
+        \\(prng.random.float() returns a floating number in the range of [0, 1]):
+        \\random f32[0]: {d}
+        \\random f32[1]: {d}
+        \\random f32[2]: {d}
+        \\
+        \\random bool[0]: {}
+        \\random bool[1]: {}
+        \\random bool[2]: {}
+        \\
+    ;
+
+    print(format, .{
+        prng.random.int(u8),
+        prng.random.int(u8),
+        prng.random.int(u8),
+        prng.random.int(i12),
+        prng.random.int(i12),
+        prng.random.int(i12),
+        prng.random.float(f32),
+        prng.random.float(f32),
+        prng.random.float(f32),
+        prng.random.boolean(),
+        prng.random.boolean(),
+        prng.random.boolean(),
+    });
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test random_number.zig
+Test [1/1] test "Random int/float/bool"...
+random u8[0]: 54
+random u8[1]: 165
+random u8[2]: 29
+
+random i12[0]: 1289
+random i12[1]: -1090
+random i12[2]: -1257
+
+(prng.random.float() returns a floating number in the range of [0, 1]):
+random f32[0]: 0.19677960872650146
+random f32[1]: 0.28425848484039307
+random f32[2]: 0.1434626579284668
+
+random bool[0]: false
+random bool[1]: true
+random bool[2]: false
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="seed"><a href="#seed">Seed</a></h2>
+<p>
+    Of course, it's <em>pseudo</em>random exactly because the randomness is
+    determined by its seed. Which means that by seeding using the same number,
+    it will generate the exact sequence of numbers every time.
+</p>
+<div class="window">
+    <div class="title">random_number.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+const print = std.debug.print;
+
+test "Seed" {
+    print("\n", .{});
+
+    const seed = 123;
+    var prng = std.rand.DefaultPrng.init(seed);
+
+    var i: usize = 0;
+    while (i < 5) : (i += 1)
+        print("random i32[{d}]: {d}\n", .{ i, prng.random.int(i32) });
+
+    print("\n", .{});
+    i = 0;
+    prng.seed(seed); // Reset the seed.
+
+    while (i < 5) : (i += 1)
+        print("random i32[{d}]: {d}\n", .{ i, prng.random.int(i32) });
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test random_number.zig
+Test [1/1] test "Seed"...
+random i32[0]: -133130118
+random i32[1]: -443718098
+random i32[2]: -1224112001
+random i32[3]: 1435331579
+random i32[4]: -2044855744
+
+random i32[0]: -133130118
+random i32[1]: -443718098
+random i32[2]: -1224112001
+random i32[3]: 1435331579
+random i32[4]: -2044855744
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="random-bytes"><a href="#random-bytes">Random bytes</a></h2>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">random_number.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+const print = std.debug.print;
+
+test "Random bytes" {
+    const seed = @truncate(u64, @bitCast(u128, std.time.nanoTimestamp()));
+    var prng = std.rand.DefaultPrng.init(seed);
+
+    var buffer: [8]u8 = undefined;
+
+    prng.random.bytes(&buffer);
+
+    print("\n", .{});
+    print("Random bytes: [ ", .{});
+
+    for (buffer) |value|
+        print("{d} ", .{value});
+
+    print("]\n", .{});
+
+    prng.random.bytes(&buffer);
+
+    print("Random bytes: [ ", .{});
+
+    for (buffer) |value|
+        print("{d} ", .{value});
+
+    print("]\n", .{});
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test random_number.zig
+Test [1/1] test "Random bytes"...
+Random bytes: [ 76 238 84 59 146 210 189 195 ]
+Random bytes: [ 136 147 232 151 120 249 161 250 ]
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>
+
+<h2 id="shuffle"><a href="#shuffle">Shuffle an array/slice</a></h2>
+<p>
+    asdf.
+</p>
+<div class="window">
+    <div class="title">random_number.zig</div>
+{{< highlight zig >}}
+const std = @import("std");
+const print = std.debug.print;
+
+test "Shuffle an array/slice" {
+    const seed = @truncate(u64, @bitCast(u128, std.time.nanoTimestamp()));
+    var prng = std.rand.DefaultPrng.init(seed);
+
+    var buffer = [_]u8{ 0, 1, 2, 3, 4, 5, 6, 7 };
+
+    print("\nOriginal array\n    [ ", .{});
+
+    for (buffer) |value|
+        print("{d} ", .{value});
+
+    print("]\n", .{});
+
+    prng.random.shuffle(u8, &buffer);
+
+    print("Shuffled array\n    [ ", .{});
+
+    for (buffer) |value|
+        print("{d} ", .{value});
+
+    print("]\n", .{});
+}
+{{< / highlight >}}
+</div>
+<div class="window">
+    <div class="title">Terminal</div>
+    <pre class="terminal">$ zig test random_number.zig
+Test [1/1] test "Shuffle an array/slice"...
+Original array
+    [ 0 1 2 3 4 5 6 7 ]
+Shuffled array
+    [ 7 0 6 4 3 2 1 5 ]
+All 1 tests passed.
+$ <span class="blink">█</span></pre>
+</div>

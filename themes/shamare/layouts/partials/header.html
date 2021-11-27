@@ -1,0 +1,7 @@
+<h1>
+    <a href="{{ .Site.BaseURL | relURL }}">{{ .Site.Title }}</a>
+
+    {{ if not .IsHome }}
+        - {{ .Title }}
+    {{ end }}
+</h1>

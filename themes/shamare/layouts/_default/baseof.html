@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    {{ partial "head.html" . }}
+</head>
+<body>
+    <header>
+        {{ partial "header.html" . }}
+    </header>
+    <main>
+        <article>
+            {{ block "main" . }}
+            {{ end }}
+        </article>
+    </main>
+    <footer>
+        {{ partialCached "footer.html" . }}
+    </footer>
+</body>
+</html>
