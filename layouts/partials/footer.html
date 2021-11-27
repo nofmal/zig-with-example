@@ -15,3 +15,7 @@ Bagus <span class="monospace">nofmal</span> Bimasakti
 {{ with .Site.GetPage "/about" }}
     &#183; <a href="{{ .RelPermalink }}">About</a>
 {{ end }}
+
+{{ with .Site.Params.sourceCode }}
+    &#183; <a href="{{ . }}">Source Code</a>
+{{ end }}

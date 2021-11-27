@@ -16,7 +16,8 @@
     },
     "params": {
         "copyrightYear": 2021,
-        "description": "asdf"
+        "description": "A collection of code examples written in Zig",
+        "sourceCode": "https://github.com/nofmal/zig-with-example"
     },
     "permalinks": {
         "examples": "/:title"
