@@ -1,5 +1,5 @@
 {
-    "baseURL": "https://zigwithexample.org/",
+    "baseURL": "https://nofmal.github.io/",
     "disableAliases": true,
     "disableHugoGeneratorInject": true,
     "disableKinds": ["RSS", "section", "sitemap", "taxonomy", "term"],
